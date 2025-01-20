@@ -1,7 +1,5 @@
 # Laravel Signature
 
-# Laravel Signature
-
 Laravel Signature is a robust and flexible package for handling API signature validation and generation. It supports multiple signing methods and can be easily extended to fit your application's needs.
 
 ## Features

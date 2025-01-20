@@ -18,7 +18,7 @@ enum SignType: string
 
     public function formatWithBrand(): string
     {
-        return strtoupper(config('signature.brand_prefix')).'-'.$this->value;
+        return strtoupper(config('signature.brand')).'-'.$this->value;
     }
 
     public static function map(): array

@@ -1,0 +1,30 @@
+{
+    "name": "mitoop/laravel-signature",
+    "type": "library",
+    "authors": [
+        {
+            "name": "mitoop",
+            "email": "me@mitoop.com"
+        }
+    ],
+    "require": {
+        "archtechx/enums": "^1.1",
+        "laravel/framework": "^11"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.20"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Mitoop\\LaravelSignature\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Mitoop\\LaravelSignature\\ServiceProvider"
+            ]
+        }
+    }
+}

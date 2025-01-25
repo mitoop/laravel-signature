@@ -29,7 +29,7 @@ This will create a `config/signature.php` file. Customize it as needed:
 
 ```php
 return [
-    'brand' => 'MAXPAY',
+    'brand' => 'XPAY',
     'max_clock_offset' => 300,
     'http_timeout' => 60,
 ];

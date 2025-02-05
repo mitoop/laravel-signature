@@ -29,7 +29,7 @@ class Validator
 
         $localTimestamp = time();
 
-        if (abs($localTimestamp - $timestamp) > config('signature.max_clock_offset')) {
+        if (config('signature.check_clock_offset') && abs($localTimestamp - $timestamp) > config('signature.max_clock_offset')) {
             throw new ValidationException(sprintf(
                 '时间偏差过大，当前时间为：%s，提供的时间为：%s，允许的最大偏差为：%d 秒。',
                 $localTimestamp,
@@ -44,7 +44,7 @@ class Validator
             throw new ValidationException('IP 地址不在白名单中');
         }
 
-        if (! Cache::add($application->getApplicationId().':'.$nonce, 1, config('signature.max_clock_offset'))) {
+        if (config('signature.check_nonce') && ! Cache::add($application->getApplicationId().':'.$nonce, 1, config('signature.max_clock_offset'))) {
             throw new ValidationException('请勿重复发送相同请求');
         }
 

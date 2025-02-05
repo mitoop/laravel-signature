@@ -34,16 +34,14 @@ class ServiceProvider extends LaravelServiceProvider
         $this->app->singleton(Context::class, function () {
             return new Context(config('signature.brand'));
         });
+
+        $this->mergeConfigFrom(__DIR__.'/../config/signature.php', 'signature');
     }
 
     public function boot(): void
     {
-        $path = realpath(__DIR__.'/../config/signature.php');
-
-        $this->mergeConfigFrom($path, 'signature');
-
         if ($this->app->runningInConsole()) {
-            $this->publishes([$path => config_path('signature.php')], 'config');
+            $this->publishes([__DIR__.'/../config/signature.php' => config_path('signature.php')], 'config');
         }
     }
 }

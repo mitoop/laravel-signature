@@ -2,12 +2,12 @@
 
 namespace Mitoop\LaravelSignature\Crypto;
 
-use Mitoop\LaravelSignature\Exceptions\UnexpectedValueException;
+use Mitoop\LaravelSignature\Exceptions\InvalidArgumentException;
 
 class Rsa
 {
     /**
-     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
      */
     public function encrypt(string $plaintext, #[\SensitiveParameter] string $secretKey): string
     {
@@ -15,11 +15,11 @@ class Rsa
             return base64_encode($encrypted);
         }
 
-        throw new UnexpectedValueException('Encrypting the content failed. Please verify that the provided public key is valid.');
+        throw new InvalidArgumentException('Encrypting the content failed. Please verify that the provided public key is valid.');
     }
 
     /**
-     * @throws UnexpectedValueException
+     * @throws InvalidArgumentException
      */
     public function decrypt(string $cipherText, #[\SensitiveParameter] string $secretKey): string
     {
@@ -27,6 +27,6 @@ class Rsa
             return $decrypted;
         }
 
-        throw new UnexpectedValueException('Decrypting the content failed. Please verify that the provided private key is valid.');
+        throw new InvalidArgumentException('Decrypting the content failed. Please verify that the provided private key is valid.');
     }
 }

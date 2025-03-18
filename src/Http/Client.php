@@ -27,7 +27,7 @@ class Client
     /**
      * @throws InvalidArgumentException
      */
-    public function post(string $url, array $params, $privateKey): Response
+    public function post(string $url, array $params, $privateKey, array $headers = []): Response
     {
         $http = $this->getHttpClient();
 
@@ -40,12 +40,12 @@ class Client
 
         $brand = ucfirst(strtolower(config('signature.brand')));
 
-        $http->withHeaders([
+        $http->withHeaders(array_merge([
             "{$brand}-Nonce" => $nonce,
             "{$brand}-Signature" => $sign,
             "{$brand}-Timestamp" => $timestamp,
             "{$brand}-Signature-Type" => $this->signType,
-        ]);
+        ], $headers));
 
         try {
             $response = $http->post($url, $params);

@@ -50,4 +50,13 @@ class KeyGenerator
 
         return preg_replace($patterns, '', $key);
     }
+
+    public function wrapKey(string $key, string $type = 'PUBLIC'): string
+    {
+        $type = strtoupper($type);
+
+        return "-----BEGIN {$type} KEY-----\n".
+            wordwrap($key, 64, "\n", true).
+            "\n-----END {$type} KEY-----";
+    }
 }

@@ -29,7 +29,7 @@ class Validator
 
         $localTimestamp = time();
 
-        if (config('signature.check_clock_offset') && abs($localTimestamp - $timestamp) > config('signature.max_clock_offset')) {
+        if (! config('signature.skip_clock_check') && abs($localTimestamp - $timestamp) > config('signature.max_clock_offset')) {
             throw new ValidationException(sprintf(
                 '时间偏差过大，当前时间为：%s，提供的时间为：%s，允许的最大偏差为：%d 秒。',
                 $localTimestamp,
@@ -40,11 +40,13 @@ class Validator
 
         $application = $this->getApplication($mchId, $appId);
 
-        if (in_array($request->ip, $application->getAllowedIps(), true)) {
+        if ($application->getAllowedIps() && ! in_array($request->ip(), $application->getAllowedIps(), true)) {
             throw new ValidationException('IP 地址不在白名单中');
         }
 
-        if (config('signature.check_nonce') && ! Cache::add($application->getApplicationId().':'.$nonce, 1, config('signature.max_clock_offset'))) {
+        if (! config('signature.skip_nonce_check')
+            &&
+            ! Cache::add(sprintf('mitoop_signature:%s:%s', $application->getApplicationId(), $nonce), 1, config('signature.max_clock_offset'))) {
             throw new ValidationException('请勿重复发送相同请求');
         }
 

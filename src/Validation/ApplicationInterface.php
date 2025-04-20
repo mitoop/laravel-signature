@@ -4,9 +4,9 @@ namespace Mitoop\LaravelSignature\Validation;
 
 interface ApplicationInterface
 {
-    public function getAllowedIps(): array;
+    public function getAllowedIps(): ?array;
 
     public function getSecretKey(): string;
 
-    public function getApplicationId(): string;
+    public function getApplicationId(): string|int;
 }

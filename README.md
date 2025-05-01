@@ -2,14 +2,14 @@
 
 Laravel Signature is a robust and flexible package for handling API signature validation and generation. It supports multiple signing methods and can be easily extended to fit your application's needs.
 
-## Features
+## ✨ Features
 
 - Supports RSA2048-SHA256 and HMAC-SHA256 signature methods.
 - Customizable brand prefixes for signatures.
 - Provides a flexible resolver interface for fetching application-specific configurations.
 - Easily integrates with Laravel's service container.
 
-## Installation
+## 📦 Installation
 
 Install the package via Composer:
 
@@ -17,7 +17,7 @@ Install the package via Composer:
 composer require mitoop/laravel-signature
 ```
 
-## Configuration
+## ⚙️ Configuration
 
 Publish the configuration file:
 

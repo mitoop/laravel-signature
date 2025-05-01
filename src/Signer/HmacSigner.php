@@ -13,6 +13,6 @@ class HmacSigner implements SignerInterface
 
     public function sign(string $payload, #[SensitiveParameter] string $secretKey): string
     {
-        return hash_hmac('sha256', $payload, $secretKey);
+        return base64_encode(hash_hmac('sha256', $payload, $secretKey, true));
     }
 }

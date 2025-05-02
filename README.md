@@ -61,3 +61,8 @@ $response = app(Client::class)->post('https://outer-service.com/api/notify', [
     'status' => 'success',
 ], 'platform-private-key');
 ```
+
+## References
+- [WechatPay-API-v3](https://wechatpay-api.gitbook.io/wechatpay-api-v3)
+- [Alipay-open-v3](https://opendocs.alipay.com/open-v3/054kaq)
+

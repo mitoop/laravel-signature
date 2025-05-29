@@ -16,7 +16,7 @@ class Client
 
     public function __construct(protected SignatureHeaderBuilderFactory $factory)
     {
-        $this->useSigner(SignType::RSA2048_SHA256->formatWithBrand());
+        $this->useSigner(SignType::SHA256_RSA2048->formatWithBrand());
     }
 
     public function useSigner(string $signType): static

@@ -30,6 +30,6 @@ abstract class Key
 
         return "-----BEGIN $keyType KEY-----\n".
             wordwrap($key, 64, "\n", true).
-            "\n-----END $keyType KEY-----";
+            "\n-----END $keyType KEY-----\n";
     }
 }

@@ -12,6 +12,8 @@ enum SignType: string
 
     case SHA256_HMAC = 'SHA256-HMAC';
 
+    case ED25519 = 'ED25519';
+
     public function formatWithBrand(): string
     {
         return strtoupper(config('signature.brand')).'-'.$this->value;
@@ -22,6 +24,7 @@ enum SignType: string
         return [
             self::SHA256_RSA2048->formatWithBrand() => RsaSigner::class,
             self::SHA256_HMAC->formatWithBrand() => HmacSigner::class,
+            self::ED25519->formatWithBrand() => Ed25519Signer::class,
         ];
     }
 }

@@ -10,7 +10,6 @@
     "require": {
         "php": "^8.2",
         "ext-openssl": "*",
-        "ext-sodium": "*",
         "archtechx/enums": "^1.1",
         "laravel/framework": "^11|^12",
         "phpseclib/phpseclib": "~3.0"

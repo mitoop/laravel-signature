@@ -3,13 +3,11 @@
 namespace Mitoop\LaravelSignature\Key\Generators;
 
 use Mitoop\LaravelSignature\Exceptions\RuntimeException;
-use Mitoop\LaravelSignature\Key\KeyType;
-use SodiumException;
+use phpseclib3\Crypt\EC;
 
 class Ed25519KeyGenerator implements KeyGeneratorInterface
 {
     /**
-     * @throws SodiumException
      * @throws RuntimeException
      */
     public function generate(): array
@@ -49,38 +47,21 @@ class Ed25519KeyGenerator implements KeyGeneratorInterface
         return [$privateKeyPem, $details['key']];
     }
 
-    /**
-     * @throws SodiumException
-     */
     protected function generateWithSodium(): array
     {
-        $keypair = sodium_crypto_sign_keypair();
-        $privateKey = sodium_crypto_sign_secretkey($keypair);
-        $publicKey = sodium_crypto_sign_publickey($keypair);
+        $private = EC::createKey('Ed25519');
+        $public = $private->getPublicKey();
+
+        /** @var EC\PublicKey $public */
+        $privatePem = str_replace("\r\n", "\n", $private->toString('PKCS8'));
+        $publicPem = str_replace("\r\n", "\n", $public->toString('PKCS8'));
+
+        $privatePem = rtrim($privatePem, "\n")."\n";
+        $publicPem = rtrim($publicPem, "\n")."\n";
 
         return [
-            $this->wrapKey($privateKey, KeyType::PRIVATE),
-            $this->wrapKey($publicKey),
+            $privatePem,
+            $publicPem,
         ];
-    }
-
-    protected function wrapKey(string $rawKey, KeyType $keyType = KeyType::PUBLIC): string
-    {
-        $prefix = $this->getDerPrefix($keyType);
-        $fullKey = $prefix.$rawKey;
-        $encoded = chunk_split(base64_encode($fullKey), 64, "\n");
-        $type = $keyType->value;
-
-        return "-----BEGIN {$type} KEY-----\n"
-            .$encoded
-            ."-----END {$type} KEY-----\n";
-    }
-
-    protected function getDerPrefix(KeyType $keyType): string
-    {
-        return match ($keyType) {
-            KeyType::PRIVATE => hex2bin('302e020100300506032b657004220420'), // PKCS#8 私钥
-            KeyType::PUBLIC => hex2bin('302a300506032b6570032100'), // X.509 公钥
-        };
     }
 }

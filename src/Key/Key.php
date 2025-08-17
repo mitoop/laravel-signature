@@ -2,14 +2,8 @@
 
 namespace Mitoop\LaravelSignature\Key;
 
-use Mitoop\LaravelSignature\Exceptions\InvalidArgumentException;
-
 abstract class Key
 {
-    protected const KEY_TYPE_PUBLIC = 'PUBLIC';
-
-    protected const KEY_TYPE_PRIVATE = 'PRIVATE';
-
     public function __construct(protected string $keyPem) {}
 
     public function __toString(): string
@@ -19,14 +13,9 @@ abstract class Key
 
     abstract public function getKey(): string;
 
-    /**
-     * @throws InvalidArgumentException
-     */
-    protected function format($key, $keyType): string
+    protected function format($key, KeyType $keyType = KeyType::PUBLIC): string
     {
-        if (! in_array($keyType = strtoupper($keyType), [static::KEY_TYPE_PUBLIC, static::KEY_TYPE_PRIVATE], true)) {
-            throw new InvalidArgumentException("Invalid key type: $keyType. Valid types are 'PUBLIC' or 'PRIVATE'.");
-        }
+        $keyType = $keyType->value;
 
         return "-----BEGIN $keyType KEY-----\n"
             .chunk_split($key, 64, "\n")

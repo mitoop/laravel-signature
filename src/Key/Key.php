@@ -17,6 +17,12 @@ abstract class Key
     {
         $keyType = $keyType->value;
 
+        $pemHeader = "-----BEGIN $keyType KEY-----";
+
+        if (str_starts_with($key, $pemHeader)) {
+            return $key;
+        }
+
         return "-----BEGIN $keyType KEY-----\n"
             .chunk_split($key, 64, "\n")
             ."-----END $keyType KEY-----\n";

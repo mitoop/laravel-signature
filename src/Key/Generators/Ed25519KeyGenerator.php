@@ -68,7 +68,7 @@ class Ed25519KeyGenerator implements KeyGeneratorInterface
     {
         $prefix = $this->getDerPrefix($keyType);
         $fullKey = $prefix.$rawKey;
-        $encoded = wordwrap(base64_encode($fullKey), 64, "\n", true);
+        $encoded = chunk_split(base64_encode($fullKey), 64, "\n");
         $type = $keyType->value;
 
         return "-----BEGIN {$type} KEY-----\n"

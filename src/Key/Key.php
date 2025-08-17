@@ -28,8 +28,8 @@ abstract class Key
             throw new InvalidArgumentException("Invalid key type: $keyType. Valid types are 'PUBLIC' or 'PRIVATE'.");
         }
 
-        return "-----BEGIN $keyType KEY-----\n".
-            wordwrap($key, 64, "\n", true).
-            "\n-----END $keyType KEY-----\n";
+        return "-----BEGIN $keyType KEY-----\n"
+            .chunk_split($key, 64, "\n")
+            ."-----END $keyType KEY-----\n";
     }
 }

@@ -4,7 +4,7 @@ Laravel Signature is a robust and flexible package for handling API signature va
 
 ## ✨ Features
 
-- Supports SHA256-RSA2048 and SHA256-HMAC signature methods.
+- Supports **SHA256-RSA2048**, **SHA256-HMAC**, and **ED25519** signature methods.
 - Customizable brand prefixes for signatures.
 - Provides a flexible resolver interface for fetching application-specific configurations.
 - Easily integrates with Laravel's service container.

@@ -7,11 +7,10 @@ use Illuminate\Support\Facades\Cache;
 use Mitoop\LaravelSignature\Exceptions\UnboundException;
 use Mitoop\LaravelSignature\Exceptions\ValidationException;
 use Mitoop\LaravelSignature\Signer\SignerInterface;
+use Mitoop\LaravelSignature\Signer\SignType;
 
 class Validator
 {
-    public function __construct(protected array $signers) {}
-
     /**
      * @throws ValidationException
      * @throws UnboundException
@@ -55,11 +54,13 @@ class Validator
 
         $signer = $this->getSigner($type);
 
-        return tap($signer->verify(
-            $this->createPayload($request, $timestamp, $nonce),
-            $application->getSecretKey(),
-            $sign,
-        ), fn () => app(Context::class)->set('application', $application));
+        if ($signer->verify($this->createPayload($request, $timestamp, $nonce), $application->getSecretKey(), $sign)) {
+            app(Context::class)->set('application', $application);
+
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -151,10 +152,18 @@ class Validator
      */
     protected function getSigner(string $type): SignerInterface
     {
-        if (isset($this->signers[$type])) {
-            return new $this->signers[$type];
+        [$brand, $signTypeStr] = array_pad(explode('-', $type, 2), 2, null);
+
+        if (empty($brand) || empty($signTypeStr)) {
+            throw new ValidationException("认证类型格式错误: '{$type}'");
         }
 
-        throw new ValidationException(sprintf('认证类型 %s 错误', $type));
+        $signType = SignType::tryFrom($signTypeStr);
+
+        if (! $signType) {
+            throw new ValidationException("不支持的签名类型: '{$signTypeStr}'");
+        }
+
+        return $signType->signer();
     }
 }

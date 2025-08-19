@@ -7,9 +7,7 @@ use Mitoop\LaravelSignature\Crypto\AesGcm;
 use Mitoop\LaravelSignature\Crypto\Rsa;
 use Mitoop\LaravelSignature\Http\Client;
 use Mitoop\LaravelSignature\Key\KeyGeneratorFactory;
-use Mitoop\LaravelSignature\Signer\SignatureHeaderBuilder;
-use Mitoop\LaravelSignature\Signer\SignatureHeaderBuilderFactory;
-use Mitoop\LaravelSignature\Signer\SignType;
+use Mitoop\LaravelSignature\Signer\SignHeaderBuilder;
 use Mitoop\LaravelSignature\Validation\Context;
 use Mitoop\LaravelSignature\Validation\Validator;
 
@@ -19,20 +17,16 @@ class ServiceProvider extends LaravelServiceProvider
         KeyGeneratorFactory::class => KeyGeneratorFactory::class,
         Rsa::class => Rsa::class,
         AesGcm::class => AesGcm::class,
-        SignatureHeaderBuilder::class => SignatureHeaderBuilder::class,
     ];
 
     public $singletons = [
+        SignHeaderBuilder::class => SignHeaderBuilder::class,
         Client::class => Client::class,
-        SignatureHeaderBuilderFactory::class => SignatureHeaderBuilderFactory::class,
+        Validator::class => Validator::class,
     ];
 
     public function register(): void
     {
-        $this->app->singleton(Validator::class, function () {
-            return new Validator(SignType::map());
-        });
-
         $this->app->singleton(Context::class, function () {
             return new Context(config('signature.brand'));
         });

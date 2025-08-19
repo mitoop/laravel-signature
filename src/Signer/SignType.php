@@ -14,17 +14,12 @@ enum SignType: string
 
     case ED25519 = 'ED25519';
 
-    public function formatWithBrand(): string
+    public function signer(): SignerInterface
     {
-        return strtoupper(config('signature.brand')).'-'.$this->value;
-    }
-
-    public static function map(): array
-    {
-        return [
-            self::SHA256_RSA2048->formatWithBrand() => RsaSigner::class,
-            self::SHA256_HMAC->formatWithBrand() => HmacSigner::class,
-            self::ED25519->formatWithBrand() => Ed25519Signer::class,
-        ];
+        return match ($this) {
+            self::SHA256_RSA2048 => new RsaSigner,
+            self::SHA256_HMAC => new HmacSigner,
+            self::ED25519 => new Ed25519Signer,
+        };
     }
 }

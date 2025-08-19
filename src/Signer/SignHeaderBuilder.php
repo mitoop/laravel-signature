@@ -4,15 +4,22 @@ namespace Mitoop\LaravelSignature\Signer;
 
 use Illuminate\Support\Str;
 
-class SignatureHeaderBuilder
+class SignHeaderBuilder
 {
-    public function __construct(protected string $signType, protected SignerInterface $signer) {}
+    protected SignType $signType = SignType::SHA256_RSA2048;
+
+    public function useSigner(SignType $signType): static
+    {
+        $this->signType = $signType;
+
+        return $this;
+    }
 
     public function generate(array $params, string $key, int $jsonOptions = 0, array $headers = []): array
     {
         $timestamp = (string) time();
         $nonce = str_replace('-', '', (string) Str::orderedUuid());
-        $sign = $this->signer->sign($this->createPayload($params, $timestamp, $nonce, $jsonOptions), $key);
+        $sign = $this->signType->signer()->sign($this->createPayload($params, $timestamp, $nonce, $jsonOptions), $key);
         $brand = ucfirst(strtolower(config('signature.brand')));
 
         return array_merge($headers, [

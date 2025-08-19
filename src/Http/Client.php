@@ -7,21 +7,16 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response as IlluminateResponse;
 use Illuminate\Support\Facades\Http;
-use Mitoop\LaravelSignature\Signer\SignatureHeaderBuilderFactory;
+use Mitoop\LaravelSignature\Signer\SignHeaderBuilder;
 use Mitoop\LaravelSignature\Signer\SignType;
 
 class Client
 {
-    protected string $signType;
+    public function __construct(protected SignHeaderBuilder $signHeaderBuilder) {}
 
-    public function __construct(protected SignatureHeaderBuilderFactory $factory)
+    public function useSigner(SignType $signType): static
     {
-        $this->useSigner(SignType::SHA256_RSA2048->formatWithBrand());
-    }
-
-    public function useSigner(string $signType): static
-    {
-        $this->signType = $signType;
+        $this->signHeaderBuilder->useSigner($signType);
 
         return $this;
     }
@@ -30,9 +25,7 @@ class Client
     {
         $http = $this->getHttpClient();
 
-        $builder = $this->factory->make($this->signType);
-
-        $http->withHeaders($builder->generate($params, $privateKey, headers: $headers));
+        $http->withHeaders($this->signHeaderBuilder->generate($params, $privateKey, headers: $headers));
 
         try {
             $response = $http->post($url, $params);

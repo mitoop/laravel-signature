@@ -2,7 +2,6 @@
 
 namespace Mitoop\LaravelSignature\Signer;
 
-use Mitoop\LaravelSignature\Exceptions\RuntimeException;
 use Mitoop\LaravelSignature\Exceptions\SignErrorException;
 use Mitoop\LaravelSignature\Exceptions\VerifyErrorException;
 use Mitoop\LaravelSignature\Key\PrivateKey;
@@ -23,7 +22,7 @@ class Ed25519Signer extends EdDSASigner
 
             return base64_encode($privateKey->sign($payload));
         } catch (Throwable $e) {
-            throw new SignErrorException('Sign Error: '.$e->getMessage());
+            throw new SignErrorException('Sign failed: '.$e->getMessage());
         }
     }
 
@@ -32,17 +31,18 @@ class Ed25519Signer extends EdDSASigner
      */
     public function verify(string $payload, #[SensitiveParameter] string $key, string $sign): bool
     {
+        $signature = base64_decode($sign, true);
+
+        if ($signature === false) {
+            throw new VerifyErrorException('Invalid base64 signature');
+        }
+
         try {
             $publicKey = EC::loadPublicKey((new PublicKey($key))->getKey());
-            $signature = base64_decode($sign, true);
-
-            if ($signature === false) {
-                throw new RuntimeException('Invalid base64 signature');
-            }
 
             return $publicKey->verify($payload, $signature);
         } catch (Throwable $e) {
-            throw new VerifyErrorException('Verify Error: '.$e->getMessage());
+            throw new VerifyErrorException('Verify failed: '.$e->getMessage());
         }
     }
 }

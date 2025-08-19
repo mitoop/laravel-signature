@@ -3,7 +3,6 @@
 namespace Mitoop\LaravelSignature\Crypto;
 
 use Mitoop\LaravelSignature\Exceptions\RuntimeException;
-use Mitoop\LaravelSignature\Exceptions\UnexpectedValueException;
 
 class AesGcm
 {
@@ -12,7 +11,7 @@ class AesGcm
     public const BLOCK_SIZE = 16;
 
     /**
-     * @throws UnexpectedValueException
+     * @throws RuntimeException
      */
     public function encrypt(
         #[\SensitiveParameter]
@@ -25,14 +24,13 @@ class AesGcm
         $ciphertext = openssl_encrypt($plaintext, static::ALGO_AES_256_GCM, $key, OPENSSL_RAW_DATA, $iv, $tag, $aad, static::BLOCK_SIZE);
 
         if ($ciphertext === false) {
-            throw new UnexpectedValueException('Encrypting the input $plaintext failed, please checking your $key and $iv whether or nor correct.');
+            throw new RuntimeException('Encrypting the input $plaintext failed, please checking your $key and $iv whether or nor correct.');
         }
 
         return base64_encode($ciphertext.$tag);
     }
 
     /**
-     * @throws UnexpectedValueException
      * @throws RuntimeException
      */
     public function decrypt(
@@ -54,7 +52,7 @@ class AesGcm
         $plaintext = openssl_decrypt(substr($ciphertext, 0, $tailLength), static::ALGO_AES_256_GCM, $key, OPENSSL_RAW_DATA, $iv, $authTag, $aad);
 
         if ($plaintext === false) {
-            throw new UnexpectedValueException('Decrypting the input $ciphertext failed, please checking your $key and $iv whether or nor correct.');
+            throw new RuntimeException('Decrypting the input $ciphertext failed, please checking your $key and $iv whether or nor correct.');
         }
 
         return $plaintext;

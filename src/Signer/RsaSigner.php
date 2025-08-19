@@ -2,8 +2,7 @@
 
 namespace Mitoop\LaravelSignature\Signer;
 
-use Mitoop\LaravelSignature\Exceptions\InvalidArgumentException;
-use Mitoop\LaravelSignature\Exceptions\UnexpectedValueException;
+use Mitoop\LaravelSignature\Exceptions\SignErrorException;
 use Mitoop\LaravelSignature\Key\PrivateKey;
 use Mitoop\LaravelSignature\Key\PublicKey;
 use SensitiveParameter;
@@ -11,8 +10,7 @@ use SensitiveParameter;
 class RsaSigner implements SignerInterface
 {
     /**
-     * @throws UnexpectedValueException
-     * @throws InvalidArgumentException
+     * @throws SignErrorException
      */
     public function sign(string $payload, #[SensitiveParameter] string $privateKey): string
     {
@@ -20,7 +18,7 @@ class RsaSigner implements SignerInterface
             return base64_encode($sign);
         }
 
-        throw new UnexpectedValueException('Signing failed. Please check if the provided private key is correct.');
+        throw new SignErrorException('Sign Error');
     }
 
     public function verify(string $payload, #[SensitiveParameter] string $key, string $sign): bool

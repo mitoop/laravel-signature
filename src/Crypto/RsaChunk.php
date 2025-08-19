@@ -2,14 +2,15 @@
 
 namespace Mitoop\LaravelSignature\Crypto;
 
-use Mitoop\LaravelSignature\Exceptions\InvalidArgumentException;
+use Mitoop\LaravelSignature\Exceptions\RuntimeException;
+use SensitiveParameter;
 
 class RsaChunk
 {
     /**
-     * @throws InvalidArgumentException
+     * @throws RuntimeException
      */
-    public function encrypt(string $plaintext, #[\SensitiveParameter] string $secretKey): string
+    public function encrypt(string $plaintext, #[SensitiveParameter] string $secretKey): string
     {
         $key = $this->getKey($secretKey, true);
         $info = $this->getKeyDetails($key);
@@ -24,11 +25,11 @@ class RsaChunk
     }
 
     /**
-     * @throws InvalidArgumentException
+     * @throws RuntimeException
      */
-    public function decrypt(string $cipherText, #[\SensitiveParameter] string $secretKey): string
+    public function decrypt(string $cipherText, #[SensitiveParameter] string $secretKey): string
     {
-        $cipherText = base64_decode($cipherText) ?: throw new InvalidArgumentException('Base64 decoding failed. Invalid ciphertext.');
+        $cipherText = base64_decode($cipherText) ?: throw new RuntimeException('Base64 decoding failed. Invalid ciphertext.');
 
         $key = $this->getKey($secretKey, false);
         $info = $this->getKeyDetails($key);
@@ -41,42 +42,42 @@ class RsaChunk
     }
 
     /**
-     * @throws InvalidArgumentException
+     * @throws RuntimeException
      */
     protected function getKey(string $key, bool $isPublic)
     {
         $opensslFunc = $isPublic ? 'openssl_pkey_get_public' : 'openssl_pkey_get_private';
 
-        return $opensslFunc($key) ?: throw new InvalidArgumentException('Invalid '.($isPublic ? 'public' : 'private').' key: '.(openssl_error_string() ?: 'Unknown error.'));
+        return $opensslFunc($key) ?: throw new RuntimeException('Invalid '.($isPublic ? 'public' : 'private').' key: '.(openssl_error_string() ?: 'Unknown error.'));
     }
 
     /**
-     * @throws InvalidArgumentException
+     * @throws RuntimeException
      */
     protected function getKeyDetails($key): array
     {
         $info = openssl_pkey_get_details($key);
 
-        return $info && isset($info['bits']) ? $info : throw new InvalidArgumentException('Failed to retrieve key details: '.(openssl_error_string() ?: 'Unknown error.'));
+        return $info && isset($info['bits']) ? $info : throw new RuntimeException('Failed to retrieve key details: '.(openssl_error_string() ?: 'Unknown error.'));
     }
 
     /**
-     * @throws InvalidArgumentException
+     * @throws RuntimeException
      */
     protected function encryptChunk(string $chunk, $key): string
     {
         return openssl_public_encrypt($chunk, $encrypted, $key, OPENSSL_PKCS1_OAEP_PADDING)
             ? $encrypted
-            : throw new InvalidArgumentException('Encryption failed: '.(openssl_error_string() ?: 'Unknown error.'));
+            : throw new RuntimeException('Encryption failed: '.(openssl_error_string() ?: 'Unknown error.'));
     }
 
     /**
-     * @throws InvalidArgumentException
+     * @throws RuntimeException
      */
     protected function decryptChunk(string $chunk, $key): string
     {
         return openssl_private_decrypt($chunk, $decrypted, $key, OPENSSL_PKCS1_OAEP_PADDING)
             ? $decrypted
-            : throw new InvalidArgumentException('Decryption failed: '.(openssl_error_string() ?: 'Unknown error.'));
+            : throw new RuntimeException('Decryption failed: '.(openssl_error_string() ?: 'Unknown error.'));
     }
 }

@@ -4,7 +4,7 @@ namespace Mitoop\LaravelSignature\Validation;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Mitoop\LaravelSignature\Exceptions\UnboundException;
+use Mitoop\LaravelSignature\Exceptions\RuntimeException;
 use Mitoop\LaravelSignature\Exceptions\ValidationException;
 use Mitoop\LaravelSignature\Signer\SignerInterface;
 use Mitoop\LaravelSignature\Signer\SignType;
@@ -13,7 +13,7 @@ class Validator
 {
     /**
      * @throws ValidationException
-     * @throws UnboundException
+     * @throws RuntimeException
      */
     public function pass(Request $request): bool
     {
@@ -120,13 +120,13 @@ class Validator
     }
 
     /**
-     * @throws UnboundException
      * @throws ValidationException
+     * @throws RuntimeException
      */
     protected function getApplication(string $mchId, string $appId): ApplicationInterface
     {
         if (! app()->bound(ApplicationResolverInterface::class)) {
-            throw new UnboundException('未绑定应用解析器');
+            throw new RuntimeException('未绑定应用解析器');
         }
 
         $application = app(ApplicationResolverInterface::class)->resolve($mchId, $appId);

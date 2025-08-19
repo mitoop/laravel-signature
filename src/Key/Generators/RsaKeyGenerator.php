@@ -2,7 +2,7 @@
 
 namespace Mitoop\LaravelSignature\Key\Generators;
 
-use Mitoop\LaravelSignature\Exceptions\UnexpectedValueException;
+use Mitoop\LaravelSignature\Exceptions\RuntimeException;
 
 class RsaKeyGenerator implements KeyGeneratorInterface
 {
@@ -14,7 +14,7 @@ class RsaKeyGenerator implements KeyGeneratorInterface
     }
 
     /**
-     * @throws UnexpectedValueException
+     * @throws RuntimeException
      */
     public function generate(): array
     {
@@ -24,7 +24,7 @@ class RsaKeyGenerator implements KeyGeneratorInterface
         ]);
 
         if ($resource === false) {
-            throw new UnexpectedValueException('Failed to generate key pair: '.openssl_error_string());
+            throw new RuntimeException('Failed to generate key pair: '.openssl_error_string());
         }
 
         openssl_pkey_export($resource, $privateKey);

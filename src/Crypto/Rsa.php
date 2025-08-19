@@ -2,13 +2,13 @@
 
 namespace Mitoop\LaravelSignature\Crypto;
 
-use Mitoop\LaravelSignature\Exceptions\InvalidArgumentException;
+use Mitoop\LaravelSignature\Exceptions\RuntimeException;
 use SensitiveParameter;
 
 class Rsa
 {
     /**
-     * @throws InvalidArgumentException
+     * @throws RuntimeException
      */
     public function encrypt(string $plaintext, #[SensitiveParameter] string $secretKey): string
     {
@@ -16,11 +16,11 @@ class Rsa
             return base64_encode($encrypted);
         }
 
-        throw new InvalidArgumentException('Encrypting the content failed. Please verify that the provided public key is valid.');
+        throw new RuntimeException('Encrypting the content failed. Please verify that the provided public key is valid.');
     }
 
     /**
-     * @throws InvalidArgumentException
+     * @throws RuntimeException
      */
     public function decrypt(string $cipherText, #[SensitiveParameter] string $secretKey): string
     {
@@ -28,6 +28,6 @@ class Rsa
             return $decrypted;
         }
 
-        throw new InvalidArgumentException('Decrypting the content failed. Please verify that the provided private key is valid.');
+        throw new RuntimeException('Decrypting the content failed. Please verify that the provided private key is valid.');
     }
 }

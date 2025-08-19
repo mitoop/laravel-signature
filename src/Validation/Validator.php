@@ -154,13 +154,19 @@ class Validator
     {
         [$brand, $signTypeStr] = array_pad(explode('-', $type, 2), 2, null);
 
-        if (empty($brand) || empty($signTypeStr)) {
+        $brand = strtoupper((string) $brand);
+        $signTypeStr = (string) $signTypeStr;
+        $configBrand = strtoupper(config('signature.brand'));
+
+        if ($brand === '' || $signTypeStr === '') {
             throw new ValidationException("认证类型格式错误: '{$type}'");
         }
 
-        $signType = SignType::tryFrom($signTypeStr);
+        if ($brand !== $configBrand) {
+            throw new ValidationException("品牌不匹配: '{$brand}'");
+        }
 
-        if (! $signType) {
+        if (! $signType = SignType::tryFrom($signTypeStr)) {
             throw new ValidationException("不支持的签名类型: '{$signTypeStr}'");
         }
 

@@ -25,7 +25,7 @@ class SignHeaderBuilder
         return array_merge($headers, [
             "{$brand}-Nonce" => $nonce,
             "{$brand}-Signature" => $sign,
-            "{$brand}-Signature-Type" => $this->signType,
+            "{$brand}-Signature-Type" => strtoupper(sprintf('%s-%s', $brand, $this->signType->value)),
             "{$brand}-Timestamp" => $timestamp,
         ]);
     }

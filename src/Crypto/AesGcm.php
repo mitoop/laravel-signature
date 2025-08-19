@@ -3,6 +3,7 @@
 namespace Mitoop\LaravelSignature\Crypto;
 
 use Mitoop\LaravelSignature\Exceptions\RuntimeException;
+use SensitiveParameter;
 
 class AesGcm
 {
@@ -14,9 +15,9 @@ class AesGcm
      * @throws RuntimeException
      */
     public function encrypt(
-        #[\SensitiveParameter]
+        #[SensitiveParameter]
         string $plaintext,
-        #[\SensitiveParameter]
+        #[SensitiveParameter]
         string $key,
         string $iv = '',
         string $aad = ''
@@ -34,9 +35,9 @@ class AesGcm
      * @throws RuntimeException
      */
     public function decrypt(
-        #[\SensitiveParameter]
+        #[SensitiveParameter]
         string $ciphertext,
-        #[\SensitiveParameter]
+        #[SensitiveParameter]
         string $key,
         string $iv = '',
         string $aad = ''

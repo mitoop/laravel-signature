@@ -3,54 +3,63 @@
 namespace Mitoop\LaravelSignature\Crypto;
 
 use Mitoop\LaravelSignature\Exceptions\RuntimeException;
+use Random\RandomException;
 use SensitiveParameter;
 
 class AesGcm
 {
-    public const ALGO_AES_256_GCM = 'aes-256-gcm';
+    public const ALGO = 'aes-256-gcm';
 
-    public const BLOCK_SIZE = 16;
+    public const TAG_LENGTH = 16;
 
     /**
      * @throws RuntimeException
+     * @throws RandomException
      */
-    public function encrypt(
-        #[SensitiveParameter]
-        string $plaintext,
-        #[SensitiveParameter]
-        string $key,
-        string $iv = '',
-        string $aad = ''
-    ): string {
-        $ciphertext = openssl_encrypt($plaintext, static::ALGO_AES_256_GCM, $key, OPENSSL_RAW_DATA, $iv, $tag, $aad, static::BLOCK_SIZE);
+    public function encrypt(string $plaintext, #[SensitiveParameter] string $key, string $associatedData = ''): array
+    {
+        $iv = random_bytes(openssl_cipher_iv_length(static::ALGO));
+
+        $tag = '';
+        $ciphertext = openssl_encrypt(
+            $plaintext,
+            static::ALGO,
+            $key,
+            OPENSSL_RAW_DATA,
+            $iv,
+            $tag,
+            $associatedData,
+            static::TAG_LENGTH
+        );
 
         if ($ciphertext === false) {
-            throw new RuntimeException('Encrypting the input $plaintext failed, please checking your $key and $iv whether or nor correct.');
+            throw new RuntimeException('Encrypting the input $plaintext failed, please check your key and IV.');
         }
 
-        return base64_encode($ciphertext.$tag);
+        return [
+            'ciphertext' => base64_encode($ciphertext.$tag),
+            'iv' => base64_encode($iv),
+            'associated_data' => $associatedData,
+        ];
     }
 
     /**
      * @throws RuntimeException
      */
     public function decrypt(
-        #[SensitiveParameter]
         string $ciphertext,
-        #[SensitiveParameter]
-        string $key,
-        string $iv = '',
-        string $aad = ''
+        #[SensitiveParameter] string $key,
+        string $iv,
+        string $associatedData = ''
     ): string {
-        $ciphertext = base64_decode($ciphertext);
-        $authTag = substr($ciphertext, $tailLength = 0 - static::BLOCK_SIZE);
-        $tagLength = strlen($authTag);
-
-        if ($tagLength > static::BLOCK_SIZE || ($tagLength < 12 && $tagLength !== 8 && $tagLength !== 4)) {
-            throw new RuntimeException('The inputs `$ciphertext` incomplete, the bytes length must be one of 16, 15, 14, 13, 12, 8 or 4.');
+        $decodedCiphertext = base64_decode($ciphertext);
+        if (strlen($decodedCiphertext) < self::TAG_LENGTH) {
+            throw new RuntimeException('Ciphertext too short, cannot extract auth tag.');
         }
+        $tag = substr($decodedCiphertext, -self::TAG_LENGTH);
+        $cipherData = substr($decodedCiphertext, 0, -self::TAG_LENGTH);
 
-        $plaintext = openssl_decrypt(substr($ciphertext, 0, $tailLength), static::ALGO_AES_256_GCM, $key, OPENSSL_RAW_DATA, $iv, $authTag, $aad);
+        $plaintext = openssl_decrypt($cipherData, static::ALGO, $key, OPENSSL_RAW_DATA, $iv, $tag, $associatedData);
 
         if ($plaintext === false) {
             throw new RuntimeException('Decrypting the input $ciphertext failed, please checking your $key and $iv whether or nor correct.');

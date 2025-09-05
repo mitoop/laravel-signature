@@ -8,19 +8,19 @@ use SensitiveParameter;
 
 class RsaAesGcm
 {
-    public const CIPHER = 'aes-256-gcm';
+    public const ALGO = 'aes-256-gcm';
 
     public const AES_KEY_SIZE = 32;
+
+    public const TAG_LENGTH = 16;
 
     /**
      * @throws RuntimeException
      * @throws RandomException
      */
     public function encrypt(
-        #[SensitiveParameter]
-        string $plainText,
-        #[SensitiveParameter]
-        string $rsaPublicKey,
+        #[SensitiveParameter] string $plainText,
+        #[SensitiveParameter] string $rsaPublicKey,
         string $associatedData = ''
     ): array {
         $aesKey = random_bytes(self::AES_KEY_SIZE);
@@ -29,27 +29,29 @@ class RsaAesGcm
             throw new RuntimeException('RSA encrypt AES key failed. Please check the public key.');
         }
 
-        $iv = random_bytes(openssl_cipher_iv_length(self::CIPHER));
+        $iv = random_bytes(openssl_cipher_iv_length(self::ALGO));
         $tag = '';
         $cipherText = openssl_encrypt(
             $plainText,
-            self::CIPHER,
+            self::ALGO,
             $aesKey,
             OPENSSL_RAW_DATA,
             $iv,
             $tag,
-            $associatedData
+            $associatedData,
+            self::TAG_LENGTH
         );
 
         if ($cipherText === false) {
             throw new RuntimeException('AES-GCM encrypt data failed.');
         }
 
+        $ciphertextWithTag = base64_encode($cipherText.$tag);
+
         return [
             'encrypted_key' => base64_encode($encryptedKey),
             'iv' => base64_encode($iv),
-            'tag' => base64_encode($tag),
-            'cipher_text' => base64_encode($cipherText),
+            'ciphertext' => $ciphertextWithTag,
             'associated_data' => $associatedData,
         ];
     }
@@ -58,14 +60,10 @@ class RsaAesGcm
      * @throws RuntimeException
      */
     public function decrypt(
-        #[SensitiveParameter]
-        string $encryptedKey,
-        #[SensitiveParameter]
-        string $cipherText,
-        #[SensitiveParameter]
-        string $rsaPrivateKey,
+        #[SensitiveParameter] string $encryptedKey,
+        #[SensitiveParameter] string $ciphertext,
+        #[SensitiveParameter] string $rsaPrivateKey,
         string $iv,
-        string $tag,
         string $associatedData = ''
     ): string {
         $decodedEncryptedKey = base64_decode($encryptedKey, true);
@@ -77,13 +75,20 @@ class RsaAesGcm
             throw new RuntimeException('RSA decrypt AES key failed. Please check the private key.');
         }
 
+        $decodedCiphertext = base64_decode($ciphertext);
+        if (strlen($decodedCiphertext) < self::TAG_LENGTH) {
+            throw new RuntimeException('Ciphertext too short, cannot extract auth tag.');
+        }
+        $tag = substr($decodedCiphertext, -self::TAG_LENGTH);
+        $cipherData = substr($decodedCiphertext, 0, -self::TAG_LENGTH);
+
         $plainText = openssl_decrypt(
-            base64_decode($cipherText),
-            self::CIPHER,
+            $cipherData,
+            self::ALGO,
             $aesKey,
             OPENSSL_RAW_DATA,
             base64_decode($iv),
-            base64_decode($tag),
+            $tag,
             $associatedData
         );
 

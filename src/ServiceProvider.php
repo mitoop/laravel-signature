@@ -5,6 +5,7 @@ namespace Mitoop\LaravelSignature;
 use Illuminate\Support\ServiceProvider as LaravelServiceProvider;
 use Mitoop\LaravelSignature\Crypto\AesGcm;
 use Mitoop\LaravelSignature\Crypto\Rsa;
+use Mitoop\LaravelSignature\Crypto\RsaAesGcm;
 use Mitoop\LaravelSignature\Http\Client;
 use Mitoop\LaravelSignature\Key\KeyGeneratorFactory;
 use Mitoop\LaravelSignature\Signer\SignHeaderBuilder;
@@ -13,16 +14,14 @@ use Mitoop\LaravelSignature\Validation\Validator;
 
 class ServiceProvider extends LaravelServiceProvider
 {
-    public $bindings = [
-        KeyGeneratorFactory::class => KeyGeneratorFactory::class,
-        Rsa::class => Rsa::class,
-        AesGcm::class => AesGcm::class,
-    ];
-
     public $singletons = [
         SignHeaderBuilder::class => SignHeaderBuilder::class,
         Client::class => Client::class,
         Validator::class => Validator::class,
+        KeyGeneratorFactory::class => KeyGeneratorFactory::class,
+        Rsa::class => Rsa::class,
+        AesGcm::class => AesGcm::class,
+        RsaAesGcm::class => RsaAesGcm::class,
     ];
 
     public function register(): void

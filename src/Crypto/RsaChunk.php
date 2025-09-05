@@ -6,7 +6,7 @@ use Mitoop\LaravelSignature\Exceptions\RuntimeException;
 use SensitiveParameter;
 
 /**
- * @deprecated 
+ * @deprecated
  */
 class RsaChunk
 {

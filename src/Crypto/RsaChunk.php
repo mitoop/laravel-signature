@@ -5,6 +5,9 @@ namespace Mitoop\LaravelSignature\Crypto;
 use Mitoop\LaravelSignature\Exceptions\RuntimeException;
 use SensitiveParameter;
 
+/**
+ * @deprecated 
+ */
 class RsaChunk
 {
     /**

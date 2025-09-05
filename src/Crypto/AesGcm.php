@@ -52,7 +52,10 @@ class AesGcm
         string $iv,
         string $associatedData = ''
     ): string {
-        $decodedCiphertext = base64_decode($ciphertext);
+        $decodedCiphertext = base64_decode($ciphertext, true);
+        if ($decodedCiphertext === false) {
+            throw new RuntimeException('Base64 decoding failed. Invalid ciphertext.');
+        }
         if (strlen($decodedCiphertext) < self::TAG_LENGTH) {
             throw new RuntimeException('Ciphertext too short, cannot extract auth tag.');
         }

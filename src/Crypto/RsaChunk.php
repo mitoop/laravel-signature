@@ -32,7 +32,7 @@ class RsaChunk
      */
     public function decrypt(string $cipherText, #[SensitiveParameter] string $secretKey): string
     {
-        $cipherText = base64_decode($cipherText) ?: throw new RuntimeException('Base64 decoding failed. Invalid ciphertext.');
+        $cipherText = base64_decode($cipherText, true) ?: throw new RuntimeException('Base64 decoding failed. Invalid ciphertext.');
 
         $key = $this->getKey($secretKey, false);
         $info = $this->getKeyDetails($key);

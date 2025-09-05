@@ -75,19 +75,25 @@ class RsaAesGcm
             throw new RuntimeException('RSA decrypt AES key failed. Please check the private key.');
         }
 
-        $decodedCiphertext = base64_decode($ciphertext);
+        $decodedCiphertext = base64_decode($ciphertext, true);
+        if ($decodedCiphertext === false) {
+            throw new RuntimeException('Invalid base64 for ciphertext.');
+        }
         if (strlen($decodedCiphertext) < self::TAG_LENGTH) {
             throw new RuntimeException('Ciphertext too short, cannot extract auth tag.');
         }
         $tag = substr($decodedCiphertext, -self::TAG_LENGTH);
         $cipherData = substr($decodedCiphertext, 0, -self::TAG_LENGTH);
-
+        $iv = base64_decode($iv, true);
+        if ($iv === false) {
+            throw new RuntimeException('Invalid base64 for iv.');
+        }
         $plainText = openssl_decrypt(
             $cipherData,
             self::ALGO,
             $aesKey,
             OPENSSL_RAW_DATA,
-            base64_decode($iv),
+            $iv,
             $tag,
             $associatedData
         );

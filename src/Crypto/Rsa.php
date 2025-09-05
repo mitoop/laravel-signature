@@ -24,7 +24,12 @@ class Rsa
      */
     public function decrypt(string $cipherText, #[SensitiveParameter] string $secretKey): string
     {
-        if (openssl_private_decrypt(base64_decode($cipherText), $decrypted, $secretKey, OPENSSL_PKCS1_OAEP_PADDING)) {
+        $decoded = base64_decode($cipherText, true);
+        if ($decoded === false) {
+            throw new RuntimeException('Base64 decoding failed. Invalid ciphertext.');
+        }
+
+        if (openssl_private_decrypt($decoded, $decrypted, $secretKey, OPENSSL_PKCS1_OAEP_PADDING)) {
             return $decrypted;
         }
 

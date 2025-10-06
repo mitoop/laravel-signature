@@ -22,7 +22,12 @@ class SignHeaderBuilder
         $sign = $this->signType->signer()->sign($this->createPayload($params, $timestamp, $nonce, $jsonOptions), $key);
         $brand = ucfirst(strtolower(config('signature.brand')));
 
-        return array_merge($headers, [
+        $prefixedHeaders = [];
+        foreach ($headers as $k => $v) {
+            $prefixedHeaders["{$brand}-{$k}"] = $v;
+        }
+
+        return array_merge($prefixedHeaders, [
             "{$brand}-Nonce" => $nonce,
             "{$brand}-Signature" => $sign,
             "{$brand}-Signature-Type" => strtoupper(sprintf('%s-%s', $brand, $this->signType->value)),

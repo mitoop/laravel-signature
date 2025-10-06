@@ -63,7 +63,7 @@ class Validator
             return true;
         }
 
-        throw new ValidationException('Signature verification failed');
+        return false;
     }
 
     /**

@@ -14,12 +14,12 @@ class ValidateSignature
     {
         try {
             if (! app(Validator::class)->pass($request)) {
-                return response()->json(['code' => 102, 'message' => '签名错误']);
+                return response()->json(['code' => 401, 'message' => 'Invalid signature']);
             }
         } catch (SignatureException $e) {
-            return response()->json(['code' => 101, 'message' => $e->getMessage()]);
+            return response()->json(['code' => 400, 'message' => $e->getMessage()]);
         } catch (Throwable $e) {
-            return response()->json(['code' => 500, 'message' => '系统内部错误']);
+            return response()->json(['code' => 500, 'message' => 'Internal server error']);
         }
 
         return $next($request);

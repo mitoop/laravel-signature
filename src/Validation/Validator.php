@@ -26,15 +26,19 @@ class Validator
         $nonce = $payload->getNonce();
         $sign = $payload->getSign();
 
-        $localTimestamp = time();
+        $currentTimestamp = time();
 
-        if (! config('signature.skip_clock_check')
-            && abs($localTimestamp - $timestamp) > config('signature.max_clock_offset')) {
+        if ($timestamp > $currentTimestamp) {
+            throw new ValidationException('Request timestamp cannot be in the future');
+        }
+
+        $maxOffset = config('signature.max_clock_offset');
+        if (! config('signature.skip_clock_check') && $currentTimestamp - $timestamp > $maxOffset) {
             throw new ValidationException(sprintf(
-                '时间偏差过大，当前时间为：%s，提供的时间为：%s，允许的最大偏差为：%d 秒。',
-                $localTimestamp,
+                'Request timestamp is too old. Current timestamp: %d, provided timestamp: %d, allowed max offset: %d seconds.',
+                $currentTimestamp,
                 $timestamp,
-                config('signature.max_clock_offset')
+                $maxOffset
             ));
         }
 
@@ -43,13 +47,12 @@ class Validator
         $allowedIps = $application->getAllowedIps();
 
         if ($allowedIps && ! in_array($request->ip(), $allowedIps, true)) {
-            throw new ValidationException('IP 地址不在白名单中');
+            throw new ValidationException('IP address not allowed');
         }
 
         if (! config('signature.skip_nonce_check')
-            &&
-            ! Cache::add(sprintf('mitoop_signature:%s:%s', $application->getApplicationId(), $nonce), 1, config('signature.max_clock_offset'))) {
-            throw new ValidationException('请勿重复发送相同请求');
+            && ! Cache::add(sprintf('mitoop_signature:%s:%s', $application->getApplicationId(), $nonce), 1, config('signature.max_clock_offset'))) {
+            throw new ValidationException('Duplicate request detected');
         }
 
         $signer = $this->getSigner($type);
@@ -60,7 +63,7 @@ class Validator
             return true;
         }
 
-        return false;
+        throw new ValidationException('Signature verification failed');
     }
 
     /**
@@ -69,13 +72,13 @@ class Validator
     protected function parseAuthHeader(string $authorization): AuthPayload
     {
         if (empty($authorization)) {
-            throw new ValidationException('Authorization 不能为空');
+            throw new ValidationException('Authorization header is required');
         }
 
         $parts = explode(' ', $authorization, 2);
 
         if (count($parts) !== 2) {
-            throw new ValidationException('签名格式不正确');
+            throw new ValidationException('Invalid authorization format');
         }
 
         $data = ['type' => $parts[0]];
@@ -86,7 +89,7 @@ class Validator
             $parts = explode('=', $item, 2);
 
             if (count($parts) !== 2) {
-                throw new ValidationException('签名格式不正确');
+                throw new ValidationException('Invalid authorization format');
             }
 
             [$key, $value] = array_map('trim', $parts);
@@ -94,7 +97,7 @@ class Validator
             if (in_array($key, $requiredKeys, true)) {
                 $value = trim($value, '"');
                 if (empty($value)) {
-                    throw new ValidationException(sprintf('%s 值不能为空', $key));
+                    throw new ValidationException("{$key} cannot be empty");
                 }
                 $data[$key] = $value;
             }
@@ -114,7 +117,7 @@ class Validator
 
         foreach ($requiredKeys as $key) {
             if (! isset($data[$key])) {
-                throw new ValidationException(sprintf('缺少 %s', $key));
+                throw new ValidationException("Missing {$key}");
             }
         }
     }
@@ -126,13 +129,13 @@ class Validator
     protected function getApplication(string $mchId, string $appId): ApplicationInterface
     {
         if (! app()->bound(ApplicationResolverInterface::class)) {
-            throw new RuntimeException('未绑定应用解析器');
+            throw new RuntimeException('Application resolver is not bound');
         }
 
         $application = app(ApplicationResolverInterface::class)->resolve($mchId, $appId);
 
         if (! $application) {
-            throw new ValidationException(sprintf('商户ID %s 或应用ID %s 错误', $mchId, $appId));
+            throw new ValidationException('Invalid merchant ID or application ID');
         }
 
         return $application;
@@ -159,15 +162,15 @@ class Validator
         $configBrand = strtoupper(config('signature.brand'));
 
         if ($brand === '' || $signTypeStr === '') {
-            throw new ValidationException("认证类型格式错误: '{$type}'");
+            throw new ValidationException("Invalid auth type format: '{$type}'");
         }
 
         if ($brand !== $configBrand) {
-            throw new ValidationException("品牌不匹配: '{$brand}'");
+            throw new ValidationException("Brand mismatch: '{$brand}'");
         }
 
         if (! $signType = SignType::tryFrom($signTypeStr)) {
-            throw new ValidationException("不支持的签名类型: '{$signTypeStr}'");
+            throw new ValidationException("Unsupported sign type: '{$signTypeStr}'");
         }
 
         return $signType->signer();

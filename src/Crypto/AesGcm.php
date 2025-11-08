@@ -37,6 +37,7 @@ class AesGcm
         }
 
         return [
+            'algorithm' => 'AEAD_AES_256_GCM',
             'ciphertext' => base64_encode($ciphertext.$tag),
             'iv' => base64_encode($iv),
             'associated_data' => $associatedData,

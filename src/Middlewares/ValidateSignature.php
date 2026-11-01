@@ -19,6 +19,8 @@ class ValidateSignature
         } catch (SignatureException $e) {
             return response()->json(['code' => 400, 'message' => $e->getMessage()]);
         } catch (Throwable $e) {
+            report($e);
+
             return response()->json(['code' => 500, 'message' => 'Internal server error']);
         }
 

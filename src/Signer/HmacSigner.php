@@ -13,6 +13,12 @@ class HmacSigner implements SignerInterface
 
     public function verify(string $payload, #[SensitiveParameter] string $key, string $sign): bool
     {
-        return hash_equals($this->sign($payload, $key), $sign);
+        $expected = $this->sign($payload, $key);
+
+        if (strlen($expected) !== strlen($sign)) {
+            return false;
+        }
+
+        return hash_equals($expected, $sign);
     }
 }

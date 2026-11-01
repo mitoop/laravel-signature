@@ -15,16 +15,17 @@ abstract class Key
 
     protected function format($key, KeyType $keyType = KeyType::PUBLIC): string
     {
-        $keyType = $keyType->value;
+        $key = trim($key);
 
-        $pemHeader = "-----BEGIN $keyType KEY-----";
-
-        if (str_starts_with($key, $pemHeader)) {
+        if (str_starts_with($key, '-----BEGIN ')) {
             return $key;
         }
 
-        return "-----BEGIN $keyType KEY-----\n"
+        $key = preg_replace('/\s+/', '', $key) ?? $key;
+        $label = $keyType->value;
+
+        return "-----BEGIN {$label} KEY-----\n"
             .chunk_split($key, 64, "\n")
-            ."-----END $keyType KEY-----\n";
+            ."-----END {$label} KEY-----\n";
     }
 }

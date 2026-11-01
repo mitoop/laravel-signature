@@ -3,6 +3,8 @@
 namespace Mitoop\LaravelSignature\Crypto;
 
 use Mitoop\LaravelSignature\Exceptions\RuntimeException;
+use Mitoop\LaravelSignature\Key\PrivateKey;
+use Mitoop\LaravelSignature\Key\PublicKey;
 use SensitiveParameter;
 
 class Rsa
@@ -12,7 +14,7 @@ class Rsa
      */
     public function encrypt(string $plaintext, #[SensitiveParameter] string $secretKey): string
     {
-        if (openssl_public_encrypt($plaintext, $encrypted, $secretKey, OPENSSL_PKCS1_OAEP_PADDING)) {
+        if (openssl_public_encrypt($plaintext, $encrypted, (new PublicKey($secretKey))->getKey(), OPENSSL_PKCS1_OAEP_PADDING)) {
             return base64_encode($encrypted);
         }
 
@@ -29,7 +31,7 @@ class Rsa
             throw new RuntimeException('Base64 decoding failed. Invalid ciphertext.');
         }
 
-        if (openssl_private_decrypt($decoded, $decrypted, $secretKey, OPENSSL_PKCS1_OAEP_PADDING)) {
+        if (openssl_private_decrypt($decoded, $decrypted, (new PrivateKey($secretKey))->getKey(), OPENSSL_PKCS1_OAEP_PADDING)) {
             return $decrypted;
         }
 

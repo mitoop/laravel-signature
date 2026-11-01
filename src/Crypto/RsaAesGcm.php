@@ -3,6 +3,8 @@
 namespace Mitoop\LaravelSignature\Crypto;
 
 use Mitoop\LaravelSignature\Exceptions\RuntimeException;
+use Mitoop\LaravelSignature\Key\PrivateKey;
+use Mitoop\LaravelSignature\Key\PublicKey;
 use Random\RandomException;
 use SensitiveParameter;
 
@@ -25,7 +27,7 @@ class RsaAesGcm
     ): array {
         $aesKey = random_bytes(self::AES_KEY_SIZE);
 
-        if (! openssl_public_encrypt($aesKey, $encryptedKey, $rsaPublicKey, OPENSSL_PKCS1_OAEP_PADDING)) {
+        if (! openssl_public_encrypt($aesKey, $encryptedKey, (new PublicKey($rsaPublicKey))->getKey(), OPENSSL_PKCS1_OAEP_PADDING)) {
             throw new RuntimeException('RSA encrypt AES key failed. Please check the public key.');
         }
 
@@ -71,7 +73,7 @@ class RsaAesGcm
             throw new RuntimeException('Invalid base64 for encrypted_key.');
         }
 
-        if (! openssl_private_decrypt($decodedEncryptedKey, $aesKey, $rsaPrivateKey, OPENSSL_PKCS1_OAEP_PADDING)) {
+        if (! openssl_private_decrypt($decodedEncryptedKey, $aesKey, (new PrivateKey($rsaPrivateKey))->getKey(), OPENSSL_PKCS1_OAEP_PADDING)) {
             throw new RuntimeException('RSA decrypt AES key failed. Please check the private key.');
         }
 

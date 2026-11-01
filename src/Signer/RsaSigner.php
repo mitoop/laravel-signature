@@ -23,9 +23,15 @@ class RsaSigner implements SignerInterface
 
     public function verify(string $payload, #[SensitiveParameter] string $key, string $sign): bool
     {
+        $signature = base64_decode($sign, true);
+
+        if ($signature === false) {
+            return false;
+        }
+
         return openssl_verify(
             $payload,
-            base64_decode($sign),
+            $signature,
             (new PublicKey($key))->getKey(),
             OPENSSL_ALGO_SHA256) === 1;
     }

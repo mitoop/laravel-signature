@@ -62,8 +62,14 @@ class AesGcm
         }
         $tag = substr($decodedCiphertext, -self::TAG_LENGTH);
         $cipherData = substr($decodedCiphertext, 0, -self::TAG_LENGTH);
+        $decodedIv = base64_decode($iv, true);
+        $expectedIvLength = openssl_cipher_iv_length(static::ALGO);
 
-        $plaintext = openssl_decrypt($cipherData, static::ALGO, $key, OPENSSL_RAW_DATA, $iv, $tag, $associatedData);
+        if ($decodedIv === false || strlen($decodedIv) !== $expectedIvLength) {
+            throw new RuntimeException('Base64 decoding failed. Invalid IV.');
+        }
+
+        $plaintext = openssl_decrypt($cipherData, static::ALGO, $key, OPENSSL_RAW_DATA, $decodedIv, $tag, $associatedData);
 
         if ($plaintext === false) {
             throw new RuntimeException('Decrypting the input $ciphertext failed, please checking your $key and $iv whether or nor correct.');

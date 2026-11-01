@@ -34,7 +34,7 @@ class Ed25519Signer extends EdDSASigner
         $signature = base64_decode($sign, true);
 
         if ($signature === false) {
-            throw new VerifyErrorException('Invalid base64 signature');
+            return false;
         }
 
         try {

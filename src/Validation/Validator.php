@@ -11,6 +11,8 @@ use Mitoop\LaravelSignature\Signer\SignType;
 
 class Validator
 {
+    protected const MAX_NONCE_LENGTH = 128;
+
     /**
      * @throws ValidationException
      * @throws RuntimeException
@@ -26,23 +28,24 @@ class Validator
         $nonce = $payload->getNonce();
         $sign = $payload->getSign();
 
-        $currentTimestamp = time();
+        $signer = $this->getSigner($type);
+        $application = $this->getApplication($mchId, $appId);
 
-        if ($timestamp > $currentTimestamp) {
-            throw new ValidationException('Request timestamp cannot be in the future');
+        if (! $signer->verify($this->createPayload($request, $timestamp, $nonce), $application->getSecretKey(), $sign)) {
+            return false;
         }
 
-        $maxOffset = config('signature.max_clock_offset');
-        if (! config('signature.skip_clock_check') && $currentTimestamp - $timestamp > $maxOffset) {
+        $currentTimestamp = time();
+        $maxOffset = (int) config('signature.max_clock_offset');
+
+        if (! config('signature.skip_clock_check') && abs($currentTimestamp - $timestamp) > $maxOffset) {
             throw new ValidationException(sprintf(
-                'Request timestamp is too old. Current timestamp: %d, provided timestamp: %d, allowed max offset: %d seconds.',
+                'Request timestamp is outside the allowed clock offset. Current timestamp: %d, provided timestamp: %d, allowed max offset: %d seconds.',
                 $currentTimestamp,
                 $timestamp,
                 $maxOffset
             ));
         }
-
-        $application = $this->getApplication($mchId, $appId);
 
         $allowedIps = $application->getAllowedIps();
 
@@ -51,19 +54,13 @@ class Validator
         }
 
         if (! config('signature.skip_nonce_check')
-            && ! Cache::add(sprintf('mitoop_signature:%s:%s', $application->getApplicationId(), $nonce), 1, config('signature.max_clock_offset'))) {
+            && ! Cache::add(sprintf('mitoop_signature:%s:%s', $application->getApplicationId(), $nonce), 1, $maxOffset)) {
             throw new ValidationException('Duplicate request detected');
         }
 
-        $signer = $this->getSigner($type);
+        app(Context::class)->set('application', $application);
 
-        if ($signer->verify($this->createPayload($request, $timestamp, $nonce), $application->getSecretKey(), $sign)) {
-            app(Context::class)->set('application', $application);
-
-            return true;
-        }
-
-        return false;
+        return true;
     }
 
     /**
@@ -96,8 +93,14 @@ class Validator
 
             if (in_array($key, $requiredKeys, true)) {
                 $value = trim($value, '"');
-                if (empty($value)) {
+                if ($value === '') {
                     throw new ValidationException("{$key} cannot be empty");
+                }
+                if ($key === RequestHeaderKeys::NONCE->value && strlen($value) > self::MAX_NONCE_LENGTH) {
+                    throw new ValidationException('nonce is too long');
+                }
+                if ($key === RequestHeaderKeys::TIMESTAMP->value && ! ctype_digit($value)) {
+                    throw new ValidationException('timestamp must be a unix timestamp');
                 }
                 $data[$key] = $value;
             }

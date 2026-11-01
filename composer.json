@@ -15,8 +15,13 @@
         "phpseclib/phpseclib": "^3.0"
     },
     "require-dev": {
-        "laravel/pint": "^1.20"
+        "laravel/pint": "^1.30",
+        "phpunit/phpunit": "^10.5"
     },
+    "scripts": {
+        "test": "@php vendor/bin/phpunit"
+    },
+    "description": "Sign and verify Laravel API requests and callbacks.",
     "license": "MIT",
     "autoload": {
         "psr-4": {

@@ -1,6 +1,6 @@
 # Laravel Signature
 
-Laravel Signature 为 API 提供入站验签和出站回调签名。支持 **SHA256-RSA2048**、**SHA256-HMAC** 和 **ED25519**。
+Laravel Signature 为 API 提供入站验签和出站回调签名。支持 **SHA256-RSA2048**、**SHA256-HMAC** 和 **ED25519**。同一服务可接入多个商户，每个商户可有多个应用。
 
 入站和出站各有一条待签名字符串。入站覆盖调用方的原始请求，出站覆盖本次发出的回调正文。接收方按对应格式验签。
 
@@ -68,7 +68,7 @@ Route::middleware([ValidateSignature::class])->group(function () {
 YOUR_APP-SHA256-RSA2048 mchid="10001",appid="app_001",nonce="abc",timestamp="1710000000",sign="base64 签名"
 ```
 
-`mchid`、`appid`、`nonce`、`timestamp` 和 `sign` 均不能为空。`nonce` 最长 128 个字符。`timestamp` 为十进制 Unix 秒。
+`mchid`、`appid`、`nonce`、`timestamp` 和 `sign` 均不能为空。`mchid` 是商户号，`appid` 是该商户下的应用号。`nonce` 最长 128 个字符。`timestamp` 为十进制 Unix 秒。
 
 ### 待签名字符串
 
@@ -86,7 +86,7 @@ abc\n
 
 ### 应用解析
 
-实现 `ApplicationResolverInterface`，按商户号和应用号返回应用。找不到时返回 `null`。
+实现 `ApplicationResolverInterface`，按商户号和应用号返回应用。同一商户下的不同应用各自拥有密钥、来源 IP 白名单和应用标识。找不到时返回 `null`。
 
 ```php
 use Mitoop\LaravelSignature\Validation\ApplicationInterface;

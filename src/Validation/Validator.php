@@ -31,6 +31,12 @@ class Validator
         $signer = $this->getSigner($scheme);
         $application = $this->getApplication($mchId, $appId);
 
+        $allowedIps = $application->getAllowedIps();
+
+        if ($allowedIps && ! in_array($request->ip(), $allowedIps, true)) {
+            throw new ValidationException('IP address not allowed');
+        }
+
         if (! $signer->verify($this->stringToSign($request, $timestamp, $nonce), $application->getKey(), $sign)) {
             return false;
         }
@@ -45,12 +51,6 @@ class Validator
                 $timestamp,
                 $ttl
             ));
-        }
-
-        $allowedIps = $application->getAllowedIps();
-
-        if ($allowedIps && ! in_array($request->ip(), $allowedIps, true)) {
-            throw new ValidationException('IP address not allowed');
         }
 
         if (! config('signature.skip_nonce_check')

@@ -38,9 +38,9 @@ class Client
 
     protected function getHttpClient(): PendingRequest
     {
-        $brand = strtolower(config('signature.brand'));
+        $prefix = strtolower(config('signature.prefix'));
 
-        return Http::withHeaders(['User-Agent' => "{$brand}/1.0"])
+        return Http::withHeaders(['User-Agent' => "{$prefix}/1.0"])
             ->timeout(config('signature.http_timeout', 60))
             ->accept('text/plain');
     }

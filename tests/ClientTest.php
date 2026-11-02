@@ -25,12 +25,12 @@ final class ClientTest extends PackageTestCase
         $this->assertTrue($response->ok());
         Http::assertSent(function ($request) use ($params) {
             $body = $request->body();
-            $timestamp = $request->header('Your_brand-Timestamp')[0];
-            $nonce = $request->header('Your_brand-Nonce')[0];
-            $signature = $request->header('Your_brand-Signature')[0];
+            $timestamp = $request->header('Your_app-Timestamp')[0];
+            $nonce = $request->header('Your_app-Nonce')[0];
+            $signature = $request->header('Your_app-Signature')[0];
 
             return $body === json_encode($params)
-                && $request->header('Your_brand-Signature-Type')[0] === 'YOUR_BRAND-SHA256-HMAC'
+                && $request->header('Your_app-Signature-Type')[0] === 'YOUR_APP-SHA256-HMAC'
                 && (new HmacSigner)->verify($timestamp."\n".$nonce."\n".$body."\n", 'platform-private-key', $signature);
         });
     }
@@ -48,7 +48,7 @@ final class ClientTest extends PackageTestCase
 
         Http::assertSent(function ($request) {
             return $request->url() === 'https://outer-service.test/hmac'
-                && $request->header('Your_brand-Signature-Type')[0] === 'YOUR_BRAND-SHA256-HMAC';
+                && $request->header('Your_app-Signature-Type')[0] === 'YOUR_APP-SHA256-HMAC';
         });
         Http::assertSent(function ($request) use ($publicKey) {
             if ($request->url() !== 'https://outer-service.test/rsa') {
@@ -56,14 +56,14 @@ final class ClientTest extends PackageTestCase
             }
 
             $body = $request->body();
-            $timestamp = $request->header('Your_brand-Timestamp')[0];
-            $nonce = $request->header('Your_brand-Nonce')[0];
+            $timestamp = $request->header('Your_app-Timestamp')[0];
+            $nonce = $request->header('Your_app-Nonce')[0];
 
-            return $request->header('Your_brand-Signature-Type')[0] === 'YOUR_BRAND-SHA256-RSA2048'
+            return $request->header('Your_app-Signature-Type')[0] === 'YOUR_APP-SHA256-RSA2048'
                 && (new RsaSigner)->verify(
                     $timestamp."\n".$nonce."\n".$body."\n",
                     $publicKey,
-                    $request->header('Your_brand-Signature')[0],
+                    $request->header('Your_app-Signature')[0],
                 );
         });
     }

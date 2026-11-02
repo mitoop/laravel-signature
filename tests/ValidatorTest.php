@@ -104,7 +104,7 @@ final class ValidatorTest extends PackageTestCase
         $this->app->make(Validator::class)->pass($request);
     }
 
-    public function test_brand_mismatch_is_rejected_before_the_application_is_resolved(): void
+    public function test_prefix_mismatch_is_rejected_before_the_application_is_resolved(): void
     {
         $this->app->bind(ApplicationResolverInterface::class, fn () => new class implements ApplicationResolverInterface
         {
@@ -113,10 +113,10 @@ final class ValidatorTest extends PackageTestCase
                 throw new RuntimeException('resolver should not be called');
             }
         });
-        $request = $this->signedRequest('nonce-brand', type: 'OTHER-SHA256-HMAC');
+        $request = $this->signedRequest('nonce-prefix', type: 'OTHER-SHA256-HMAC');
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage("Brand mismatch: 'OTHER'");
+        $this->expectExceptionMessage("Prefix mismatch: 'OTHER'");
 
         $this->app->make(Validator::class)->pass($request);
     }
@@ -188,7 +188,7 @@ final class ValidatorTest extends PackageTestCase
         });
     }
 
-    private function signedRequest(string $nonce, ?int $timestamp = null, string $type = 'YOUR_BRAND-SHA256-HMAC', ?string $sign = null): Request
+    private function signedRequest(string $nonce, ?int $timestamp = null, string $type = 'YOUR_APP-SHA256-HMAC', ?string $sign = null): Request
     {
         $timestamp ??= time();
         $body = '{"name":"x"}';

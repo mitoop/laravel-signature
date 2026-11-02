@@ -36,14 +36,14 @@ class Validator
         }
 
         $currentTimestamp = time();
-        $maxOffset = (int) config('signature.max_clock_offset');
+        $ttl = (int) config('signature.ttl');
 
-        if (! config('signature.skip_clock_check') && abs($currentTimestamp - $timestamp) > $maxOffset) {
+        if (! config('signature.skip_ttl_check') && abs($currentTimestamp - $timestamp) > $ttl) {
             throw new ValidationException(sprintf(
                 'Request timestamp is outside the allowed clock offset. Current timestamp: %d, provided timestamp: %d, allowed max offset: %d seconds.',
                 $currentTimestamp,
                 $timestamp,
-                $maxOffset
+                $ttl
             ));
         }
 
@@ -54,7 +54,7 @@ class Validator
         }
 
         if (! config('signature.skip_nonce_check')
-            && ! Cache::add(sprintf('mitoop_signature:%s:%s', $application->getApplicationId(), $nonce), 1, $maxOffset)) {
+            && ! Cache::add(sprintf('mitoop_signature:%s:%s', $application->getApplicationId(), $nonce), 1, $ttl)) {
             throw new ValidationException('Duplicate request detected');
         }
 
@@ -158,18 +158,18 @@ class Validator
      */
     protected function getSigner(string $type): SignerInterface
     {
-        [$brand, $signTypeStr] = array_pad(explode('-', $type, 2), 2, null);
+        [$prefix, $signTypeStr] = array_pad(explode('-', $type, 2), 2, null);
 
-        $brand = strtoupper((string) $brand);
+        $prefix = strtoupper((string) $prefix);
         $signTypeStr = (string) $signTypeStr;
-        $configBrand = strtoupper(config('signature.brand'));
+        $configPrefix = strtoupper(config('signature.prefix'));
 
-        if ($brand === '' || $signTypeStr === '') {
+        if ($prefix === '' || $signTypeStr === '') {
             throw new ValidationException("Invalid auth type format: '{$type}'");
         }
 
-        if ($brand !== $configBrand) {
-            throw new ValidationException("Brand mismatch: '{$brand}'");
+        if ($prefix !== $configPrefix) {
+            throw new ValidationException("Prefix mismatch: '{$prefix}'");
         }
 
         if (! $signType = SignType::tryFrom($signTypeStr)) {

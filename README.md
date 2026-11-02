@@ -20,15 +20,15 @@ php artisan vendor:publish --tag=config --provider="Mitoop\\LaravelSignature\\Se
 
 ```php
 return [
-    'brand' => 'your_brand',
-    'max_clock_offset' => 300,
+    'prefix' => 'your_app',
+    'ttl' => 300,
     'http_timeout' => 60,
-    'skip_clock_check' => false,
+    'skip_ttl_check' => false,
     'skip_nonce_check' => false,
 ];
 ```
 
-`brand` 不要包含连字符。`max_clock_offset` 是入站时间戳允许偏离服务器时间的秒数，过去和未来都算。`http_timeout` 是出站请求的超时时间。两个 `skip_` 只用于本地调试。
+`prefix` 不要包含连字符。`ttl` 是入站请求有效期，单位秒，过去和未来都算，nonce 也按这个时间防重放。`http_timeout` 是出站请求的超时时间。两个 `skip_` 只用于本地调试。
 
 ## 入站验签
 
@@ -42,10 +42,10 @@ Route::middleware([ValidateSignature::class])->group(function () {
 });
 ```
 
-调用方把凭证放在 `Authorization` 里。`your_brand` 会变成：
+调用方把凭证放在 `Authorization` 里。`your_app` 会变成：
 
 ```text
-YOUR_BRAND-SHA256-RSA2048 mchid="10001",appid="app_001",nonce="abc",timestamp="1710000000",sign="base64 签名"
+YOUR_APP-SHA256-RSA2048 mchid="10001",appid="app_001",nonce="abc",timestamp="1710000000",sign="base64 签名"
 ```
 
 `mchid`、`appid`、`nonce`、`timestamp`、`sign` 都不能空。`nonce` 最长 128 个字符。`timestamp` 是十进制 Unix 秒。
@@ -110,13 +110,13 @@ $response = app(Client::class)
 
 待签名字符串是时间戳、随机串和 JSON 原文，每段后面都有换行。签名覆盖的就是发出去的那份 body。
 
-品牌 `your_brand` 会生成这些头：
+前缀 `your_app` 会生成这些头：
 
 ```text
-Your_brand-Nonce
-Your_brand-Signature
-Your_brand-Signature-Type: YOUR_BRAND-SHA256-RSA2048
-Your_brand-Timestamp
+Your_app-Nonce
+Your_app-Signature
+Your_app-Signature-Type: YOUR_APP-SHA256-RSA2048
+Your_app-Timestamp
 ```
 
 对方的 HTTP 状态是 2xx，并且响应正文正好是 `success` 时，`$response->ok()` 为真。

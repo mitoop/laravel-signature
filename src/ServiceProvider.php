@@ -23,7 +23,7 @@ class ServiceProvider extends LaravelServiceProvider
     public function register(): void
     {
         $this->app->singleton(Context::class, function () {
-            return new Context(config('signature.brand'));
+            return new Context(config('signature.prefix'));
         });
 
         $this->mergeConfigFrom(__DIR__.'/../config/signature.php', 'signature');

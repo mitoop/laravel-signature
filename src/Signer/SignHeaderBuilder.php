@@ -20,18 +20,18 @@ class SignHeaderBuilder
         $timestamp = (string) time();
         $nonce = str_replace('-', '', (string) Str::orderedUuid());
         $sign = $this->signType->signer()->sign($this->createPayload($params, $timestamp, $nonce, $jsonOptions), $key);
-        $brand = ucfirst(strtolower(config('signature.brand')));
+        $prefix = ucfirst(strtolower(config('signature.prefix')));
 
         $prefixedHeaders = [];
         foreach ($headers as $k => $v) {
-            $prefixedHeaders["{$brand}-{$k}"] = $v;
+            $prefixedHeaders["{$prefix}-{$k}"] = $v;
         }
 
         return array_merge($prefixedHeaders, [
-            "{$brand}-Nonce" => $nonce,
-            "{$brand}-Signature" => $sign,
-            "{$brand}-Signature-Type" => strtoupper(sprintf('%s-%s', $brand, $this->signType->value)),
-            "{$brand}-Timestamp" => $timestamp,
+            "{$prefix}-Nonce" => $nonce,
+            "{$prefix}-Signature" => $sign,
+            "{$prefix}-Signature-Type" => strtoupper(sprintf('%s-%s', $prefix, $this->signType->value)),
+            "{$prefix}-Timestamp" => $timestamp,
         ]);
     }
 

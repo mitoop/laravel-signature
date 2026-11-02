@@ -43,10 +43,10 @@ abstract class PackageTestCase extends TestCase
                 ],
             ],
             'signature' => [
-                'brand' => 'your_brand',
-                'max_clock_offset' => 300,
+                'prefix' => 'your_app',
+                'ttl' => 300,
                 'http_timeout' => 5,
-                'skip_clock_check' => false,
+                'skip_ttl_check' => false,
                 'skip_nonce_check' => false,
             ],
         ]));

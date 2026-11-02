@@ -4,6 +4,11 @@ Laravel Signature 为 API 提供入站验签和出站回调签名。支持 **SHA
 
 入站和出站各有一条待签名字符串。入站覆盖调用方的原始请求，出站覆盖本次发出的回调正文。接收方按对应格式验签。
 
+## 环境要求
+
+* PHP ^8.2
+* Laravel ^11.0 | ^12.0 | ^13.0
+
 ## 安装
 
 通过 Composer 安装：
@@ -11,10 +16,6 @@ Laravel Signature 为 API 提供入站验签和出站回调签名。支持 **SHA
 ```shell
 composer require mitoop/laravel-signature
 ```
-
-PHP ^8.2
-
-Laravel ^11.0 | ^12.0 | ^13.0
 
 ## 配置
 

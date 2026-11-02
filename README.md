@@ -70,6 +70,8 @@ YOUR_APP-SHA256-RSA2048 mchid="10001",appid="app_001",nonce="abc",timestamp="171
 
 `mchid`、`appid`、`nonce`、`timestamp` 和 `sign` 均不能为空。`mchid` 是商户号，`appid` 是该商户下的应用号。`nonce` 最长 128 个字符。`timestamp` 为十进制 Unix 秒。
 
+商户为每个应用生成一对公私钥，私钥自己保存，公钥放到平台。请求由商户私钥签名，平台用该应用的公钥验签。`SHA256-HMAC` 没有公私钥，商户和平台共用同一把密钥。
+
 ### 待签名字符串
 
 待签名字符串由请求方法、URI、时间戳、nonce 和原始 body 组成。每段以 `\n` 结束，包括最后一段：
@@ -134,12 +136,14 @@ use Mitoop\LaravelSignature\Http\Client;
 use Mitoop\LaravelSignature\Signer\SignType;
 
 $response = app(Client::class)
-    ->useSigner(SignType::SHA256_HMAC)
+    ->useSigner(SignType::SHA256_RSA2048)
     ->post('https://outer-service.com/api/notify', [
         'order_id' => '123456',
         'status' => 'success',
     ], 'platform-private-key');
 ```
+
+平台为每个商户的每个应用生成一对公私钥，或一把密钥。第三个参数是平台保存的私钥或密钥。使用公私钥时，平台把对应的公钥交给该应用，商户用这把公钥验证回调。`SHA256-HMAC` 没有公私钥，双方使用同一把密钥。
 
 待签名字符串由时间戳、nonce 和 JSON 正文组成。每段以 `\n` 结束，包括最后一段。签名覆盖的是实际发出的那份正文：
 

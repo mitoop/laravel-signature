@@ -12,9 +12,9 @@ class RsaSigner implements SignerInterface
     /**
      * @throws SignErrorException
      */
-    public function sign(string $payload, #[SensitiveParameter] string $privateKey): string
+    public function sign(string $payload, #[SensitiveParameter] string $key): string
     {
-        if (openssl_sign($payload, $sign, (new PrivateKey($privateKey))->getKey(), OPENSSL_ALGO_SHA256)) {
+        if (openssl_sign($payload, $sign, (new PrivateKey($key))->getKey(), OPENSSL_ALGO_SHA256)) {
             return base64_encode($sign);
         }
 

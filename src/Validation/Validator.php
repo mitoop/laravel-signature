@@ -21,17 +21,17 @@ class Validator
     {
         $payload = $this->parseAuthHeader((string) $request->header('Authorization'));
 
-        $type = $payload->getType();
+        $scheme = $payload->getScheme();
         $appId = $payload->getAppId();
         $mchId = $payload->getMchId();
         $timestamp = $payload->getTimestamp();
         $nonce = $payload->getNonce();
         $sign = $payload->getSign();
 
-        $signer = $this->getSigner($type);
+        $signer = $this->getSigner($scheme);
         $application = $this->getApplication($mchId, $appId);
 
-        if (! $signer->verify($this->createPayload($request, $timestamp, $nonce), $application->getSecretKey(), $sign)) {
+        if (! $signer->verify($this->stringToSign($request, $timestamp, $nonce), $application->getKey(), $sign)) {
             return false;
         }
 
@@ -78,10 +78,10 @@ class Validator
             throw new ValidationException('Invalid authorization format');
         }
 
-        $data = ['type' => $parts[0]];
+        $data = ['scheme' => $parts[0]];
         $items = explode(',', $parts[1]);
 
-        $requiredKeys = RequestHeaderKeys::values();
+        $requiredKeys = AuthorizationParameter::values();
         foreach ($items as $item) {
             $parts = explode('=', $item, 2);
 
@@ -96,10 +96,10 @@ class Validator
                 if ($value === '') {
                     throw new ValidationException("{$key} cannot be empty");
                 }
-                if ($key === RequestHeaderKeys::NONCE->value && strlen($value) > self::MAX_NONCE_LENGTH) {
+                if ($key === AuthorizationParameter::NONCE->value && strlen($value) > self::MAX_NONCE_LENGTH) {
                     throw new ValidationException('nonce is too long');
                 }
-                if ($key === RequestHeaderKeys::TIMESTAMP->value && ! ctype_digit($value)) {
+                if ($key === AuthorizationParameter::TIMESTAMP->value && ! ctype_digit($value)) {
                     throw new ValidationException('timestamp must be a unix timestamp');
                 }
                 $data[$key] = $value;
@@ -116,7 +116,7 @@ class Validator
      */
     protected function validateRequiredKeys(array $data): void
     {
-        $requiredKeys = RequestHeaderKeys::values();
+        $requiredKeys = AuthorizationParameter::values();
 
         foreach ($requiredKeys as $key) {
             if (! isset($data[$key])) {
@@ -144,7 +144,7 @@ class Validator
         return $application;
     }
 
-    protected function createPayload(Request $request, $timestamp, $nonce): string
+    protected function stringToSign(Request $request, $timestamp, $nonce): string
     {
         return strtoupper($request->method())."\n".
             $request->getRequestUri()."\n".
@@ -156,16 +156,16 @@ class Validator
     /**
      * @throws ValidationException
      */
-    protected function getSigner(string $type): SignerInterface
+    protected function getSigner(string $scheme): SignerInterface
     {
-        [$prefix, $signTypeStr] = array_pad(explode('-', $type, 2), 2, null);
+        [$prefix, $signTypeStr] = array_pad(explode('-', $scheme, 2), 2, null);
 
         $prefix = strtoupper((string) $prefix);
         $signTypeStr = (string) $signTypeStr;
         $configPrefix = strtoupper(config('signature.prefix'));
 
         if ($prefix === '' || $signTypeStr === '') {
-            throw new ValidationException("Invalid auth type format: '{$type}'");
+            throw new ValidationException("Invalid auth type format: '{$scheme}'");
         }
 
         if ($prefix !== $configPrefix) {

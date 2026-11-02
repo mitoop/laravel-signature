@@ -6,33 +6,33 @@ class AuthPayload
 {
     public function __construct(protected array $data) {}
 
-    public function getType(): string
+    public function getScheme(): string
     {
-        return (string) $this->data[RequestHeaderKeys::TYPE()];
+        return (string) $this->data[AuthorizationParameter::SCHEME()];
     }
 
     public function getMchId(): string
     {
-        return (string) $this->data[RequestHeaderKeys::MCH_ID()];
+        return (string) $this->data[AuthorizationParameter::MCH_ID()];
     }
 
     public function getAppId(): string
     {
-        return (string) $this->data[RequestHeaderKeys::APP_ID()];
+        return (string) $this->data[AuthorizationParameter::APP_ID()];
     }
 
     public function getNonce(): string
     {
-        return (string) $this->data[RequestHeaderKeys::NONCE()];
+        return (string) $this->data[AuthorizationParameter::NONCE()];
     }
 
     public function getSign(): string
     {
-        return (string) $this->data[RequestHeaderKeys::SIGN()];
+        return (string) $this->data[AuthorizationParameter::SIGN()];
     }
 
     public function getTimestamp(): int
     {
-        return (int) $this->data[RequestHeaderKeys::TIMESTAMP()];
+        return (int) $this->data[AuthorizationParameter::TIMESTAMP()];
     }
 }

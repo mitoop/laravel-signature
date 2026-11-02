@@ -16,7 +16,7 @@ class Ed25519KeyGenerator implements KeyGeneratorInterface
             return $this->generateWithOpenssl();
         }
 
-        return $this->generateWithSodium();
+        return $this->generateWithPhpseclib();
     }
 
     /**
@@ -47,7 +47,7 @@ class Ed25519KeyGenerator implements KeyGeneratorInterface
         return [$privateKeyPem, $details['key']];
     }
 
-    protected function generateWithSodium(): array
+    protected function generateWithPhpseclib(): array
     {
         $private = EC::createKey('Ed25519');
         $public = $private->getPublicKey();

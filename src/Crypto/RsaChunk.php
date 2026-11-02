@@ -13,9 +13,9 @@ class RsaChunk
     /**
      * @throws RuntimeException
      */
-    public function encrypt(string $plaintext, #[SensitiveParameter] string $secretKey): string
+    public function encrypt(string $plaintext, #[SensitiveParameter] string $publicKey): string
     {
-        $key = $this->getKey($secretKey, true);
+        $key = $this->getKey($publicKey, true);
         $info = $this->getKeyDetails($key);
 
         $paddingLength = 42; // 适用于 OPENSSL_PKCS1_OAEP_PADDING, OPENSSL_PKCS1_PADDING 为 11
@@ -30,11 +30,11 @@ class RsaChunk
     /**
      * @throws RuntimeException
      */
-    public function decrypt(string $cipherText, #[SensitiveParameter] string $secretKey): string
+    public function decrypt(string $cipherText, #[SensitiveParameter] string $privateKey): string
     {
         $cipherText = base64_decode($cipherText, true) ?: throw new RuntimeException('Base64 decoding failed. Invalid ciphertext.');
 
-        $key = $this->getKey($secretKey, false);
+        $key = $this->getKey($privateKey, false);
         $info = $this->getKeyDetails($key);
 
         $blockSize = $info['bits'] / 8;

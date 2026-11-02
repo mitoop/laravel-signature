@@ -21,11 +21,11 @@ class Client
         return $this;
     }
 
-    public function post(string $url, array $params, $privateKey, array $headers = []): Response
+    public function post(string $url, array $params, $key, array $headers = []): Response
     {
         $http = $this->getHttpClient();
 
-        $http->withHeaders($this->signHeaderBuilder->generate($params, $privateKey, headers: $headers));
+        $http->withHeaders($this->signHeaderBuilder->generate($params, $key, headers: $headers));
 
         try {
             $response = $http->post($url, $params);

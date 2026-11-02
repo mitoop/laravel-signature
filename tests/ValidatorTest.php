@@ -166,7 +166,7 @@ final class ValidatorTest extends PackageTestCase
                 return $this->allowedIps;
             }
 
-            public function getSecretKey(): string
+            public function getKey(): string
             {
                 return $this->secret;
             }

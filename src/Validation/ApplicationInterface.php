@@ -6,7 +6,7 @@ interface ApplicationInterface
 {
     public function getAllowedIps(): ?array;
 
-    public function getSecretKey(): string;
+    public function getKey(): string;
 
     public function getApplicationId(): string|int;
 }

@@ -96,7 +96,7 @@ class ApplicationResolver implements ApplicationResolverInterface
 {
     public function resolve(string $mchId, string $appId): ?ApplicationInterface
     {
-        // 返回实现了 getAllowedIps()、getSecretKey()、getApplicationId() 的应用
+        // 返回实现了 getAllowedIps()、getKey()、getApplicationId() 的应用
     }
 }
 ```

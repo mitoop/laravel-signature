@@ -12,9 +12,9 @@ class Rsa
     /**
      * @throws RuntimeException
      */
-    public function encrypt(string $plaintext, #[SensitiveParameter] string $secretKey): string
+    public function encrypt(string $plaintext, #[SensitiveParameter] string $publicKey): string
     {
-        if (openssl_public_encrypt($plaintext, $encrypted, (new PublicKey($secretKey))->getKey(), OPENSSL_PKCS1_OAEP_PADDING)) {
+        if (openssl_public_encrypt($plaintext, $encrypted, (new PublicKey($publicKey))->getKey(), OPENSSL_PKCS1_OAEP_PADDING)) {
             return base64_encode($encrypted);
         }
 
@@ -24,14 +24,14 @@ class Rsa
     /**
      * @throws RuntimeException
      */
-    public function decrypt(string $cipherText, #[SensitiveParameter] string $secretKey): string
+    public function decrypt(string $cipherText, #[SensitiveParameter] string $privateKey): string
     {
         $decoded = base64_decode($cipherText, true);
         if ($decoded === false) {
             throw new RuntimeException('Base64 decoding failed. Invalid ciphertext.');
         }
 
-        if (openssl_private_decrypt($decoded, $decrypted, (new PrivateKey($secretKey))->getKey(), OPENSSL_PKCS1_OAEP_PADDING)) {
+        if (openssl_private_decrypt($decoded, $decrypted, (new PrivateKey($privateKey))->getKey(), OPENSSL_PKCS1_OAEP_PADDING)) {
             return $decrypted;
         }
 

@@ -19,7 +19,7 @@ class SignHeaderBuilder
     {
         $timestamp = (string) time();
         $nonce = str_replace('-', '', (string) Str::orderedUuid());
-        $sign = $this->signType->signer()->sign($this->createPayload($params, $timestamp, $nonce, $jsonOptions), $key);
+        $sign = $this->signType->signer()->sign($this->stringToSign($params, $timestamp, $nonce, $jsonOptions), $key);
         $prefix = ucfirst(strtolower(config('signature.prefix')));
 
         $prefixedHeaders = [];
@@ -35,7 +35,7 @@ class SignHeaderBuilder
         ]);
     }
 
-    protected function createPayload(array $params, string $timestamp, string $nonce, int $jsonOptions): string
+    protected function stringToSign(array $params, string $timestamp, string $nonce, int $jsonOptions): string
     {
         return $timestamp."\n".
             $nonce."\n".

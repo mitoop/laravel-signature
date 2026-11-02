@@ -15,10 +15,10 @@ class Ed25519Signer extends EdDSASigner
     /**
      * @throws SignErrorException
      */
-    public function sign(string $payload, #[SensitiveParameter] string $privateKey): string
+    public function sign(string $payload, #[SensitiveParameter] string $key): string
     {
         try {
-            $privateKey = EC::loadPrivateKey((new PrivateKey($privateKey))->getKey());
+            $privateKey = EC::loadPrivateKey((new PrivateKey($key))->getKey());
 
             return base64_encode($privateKey->sign($payload));
         } catch (Throwable $e) {
